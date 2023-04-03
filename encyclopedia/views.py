@@ -4,6 +4,7 @@ from django import forms
 from django.urls import reverse
 from . import util
 import markdown2
+import random as rand
 
 class NewPageForm(forms.Form):
     title = forms.CharField(label="Title ", max_length=20,min_length=3,required=True)
@@ -75,3 +76,10 @@ def editpage(request,title):
         content = request.POST['content']
         util.save_entry(title,content)
         return redirect(reverse("wiki",kwargs={"title":title}))
+    
+def random(request):
+    list = util.list_entries()
+    if len(list) == 0:
+        return HttpResponseNotFound(render(request,"encyclopedia/error_not_found.html"))
+    title_index = rand.randint(0,len(list)-1)
+    return redirect(reverse("wiki",kwargs={"title":list[title_index]}))
