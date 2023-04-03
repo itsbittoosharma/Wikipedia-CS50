@@ -9,6 +9,9 @@ class NewPageForm(forms.Form):
     title = forms.CharField(label="Title ", max_length=20,min_length=3,required=True)
     content = forms.CharField(widget=forms.Textarea())
 
+class EditPageForm(forms.Form):
+    content = forms.CharField(widget=forms.Textarea())
+
 def index(request):
     if request.GET.__contains__('q'):
         q=request.GET['q']
@@ -27,6 +30,8 @@ def index(request):
         })
 
 def wiki(request, title):
+    if(title==None):
+        return HttpResponseNotFound(render(request,"encyclopedia/error_not_found.html"))
     content = util.get_entry(title)
     if content is None:
         return HttpResponseNotFound(render(request,"encyclopedia/error_not_found.html"))
@@ -58,3 +63,15 @@ def newpage(request):
                 "title":"Create New Page",
                 "form":NewPageForm(form)
                           })
+        
+def editpage(request,title):
+    if request.method == "GET":
+        return render(request,"encyclopedia/editpage.html",
+                      {
+            "title":title,
+            "content":util.get_entry(title),
+                      })
+    else:
+        content = request.POST['content']
+        util.save_entry(title,content)
+        return redirect(reverse("wiki",kwargs={"title":title}))
